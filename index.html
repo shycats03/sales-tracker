@@ -78,7 +78,7 @@
     }
   </style>
 </head>
-<body>
+<body onload="loadOrd
   <div class="container">
     <h1>🧾 Sales Tracker - J&S PrinTEEng Press</h1>
 
@@ -157,6 +157,7 @@
   </div>
 
   <script>
+    const apiURL = "https://script.google.com/macros/s/AKfycbz29ZjIyJlEIFPqHR0ijRoAz4Gjndej67_7TEaZ-s8Ym_QDpBBMz42SJaapIOQTiNzf/exec";
     const items = [];
 
     function addItemToList() {
@@ -177,7 +178,7 @@
       document.getElementById('itemPrice').value = '';
     }
 
-    function addOrder() {
+    async function addOrder() {
       let totalSum = 0, expensesSum = 0, incomeSum = 0;
       const buyer = document.getElementById('buyerName').value;
       const date = document.getElementById('orderDate').value;
@@ -226,6 +227,26 @@
       document.getElementById('summary').textContent = `Total: ₱${totalSum.toFixed(2)} | Expenses: ₱${expensesSum.toFixed(2)} | Income: ₱${incomeSum.toFixed(2)}`;
       document.getElementById('itemList').innerHTML = '';
       items.length = 0;
+
+      // Send to Google Sheet
+      const payload = {
+        buyer,
+        date,
+        items: itemSummary.replace(/<br>/g, '\\n'),
+        total: total.toFixed(2),
+        down: down.toFixed(2),
+        received: received.toFixed(2),
+        expenses: expenses.toFixed(2),
+        balance: balance.toFixed(2),
+        income: income.toFixed(2),
+        status,
+        notes
+      };
+      await fetch(apiURL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
     }
 
     function makeRowEditable(row) {
