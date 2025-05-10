@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sales Tracker - J&S PrinTEEng Press</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background: #f4f6f8;
+      color: #333;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    label {
+      font-weight: 600;
+      margin-top: 10px;
+    }
+    input, select, button, textarea {
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 100%;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+      font-size: 14px;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    .edit-btn, .save-btn {
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: #3498db;
+      font-weight: bold;
+    }
+    ul.item-list {
+      list-style-type: disc;
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧾 Sales Tracker - J&S PrinTEEng Press</h1>
+
+    <div class="form-grid" style="grid-template-columns: repeat(4, 1fr);">
+      <div style="grid-column: span 4;">
+        <label>📢 Facebook Ads Expense</label>
+        <input type="number" id="fbAds" placeholder="Enter amount for Facebook ads" />
+        <button onclick="addFacebookExpense()">Add Facebook Ad Expense</button>
+      </div>
+      <div>
+        <label>Buyer Name</label>
+        <input type="text" id="buyerName" />
+      </div>
+      <div>
+        <label>Date</label>
+        <input type="date" id="orderDate" />
+      </div>
+      <div style="grid-column: span 4; height: 0;"></div>
+      <div>
+        <label>Item Name</label>
+        <input type="text" id="itemName" />
+      </div>
+      <div>
+        <label>Item Quantity</label>
+        <input type="number" id="itemQty" />
+      </div>
+      <div>
+        <label>Item Price</label>
+        <input type="number" id="itemPrice" />
+      </div>
+      <div style="grid-column: span 4;">
+        <button onclick="addItemToList()">➕ Add Item</button>
+        <ul id="itemList" class="item-list"></ul>
+      </div>
+      <div>
+        <label>Downpayment</label>
+        <input type="number" id="downpayment" />
+      </div>
+      <div>
+        <label>Amount Received</label>
+        <input type="number" id="amountReceived" />
+      </div>
+      <div>
+        <label>Expenses</label>
+        <input type="number" id="expenses" />
+      </div>
+      <div style="grid-column: span 4; height: 0;"></div>
+      <div>
+        <label>Notes</label>
+        <input type="text" id="notes" />
+      </div>
+      <div>
+        <label>Status</label>
+        <select id="status">
+          <option value="Pending">Pending</option>
+          <option value="Partially Paid">Partially Paid</option>
+          <option value="Paid">Paid</option>
+          <option value="Delivered">Delivered</option>
+        </select>
+      </div>
+    </div>
+    <button onclick="addOrder()">✅ Add Order</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Buyer</th><th>Date</th><th>Items</th><th>Total</th>
+          <th>Downpayment</th><th>Received</th><th>Expenses</th><th>Balance</th><th>Income</th><th>Status</th><th>Notes</th><th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTable"></tbody>
+    </table>
+    <div style="margin-top: 20px; font-weight: bold;">
+      <p id="summary">Total: ₱0.00 | Expenses: ₱0.00 | Income: ₱0.00</p>
+    </div>
+  </div>
+
+  <script>
+    const items = [];
+
+    function addItemToList() {
+      const name = document.getElementById('itemName').value;
+      const qty = parseInt(document.getElementById('itemQty').value);
+      const price = parseFloat(document.getElementById('itemPrice').value);
+      if (!name || !qty || !price) return;
+
+      items.push({ name, qty, price });
+
+      const list = document.getElementById('itemList');
+      const li = document.createElement('li');
+      li.textContent = `${name} - ${qty} pcs @ ₱${price}`;
+      list.appendChild(li);
+
+      document.getElementById('itemName').value = '';
+      document.getElementById('itemQty').value = '';
+      document.getElementById('itemPrice').value = '';
+    }
+
+    function addOrder() {
+      let totalSum = 0, expensesSum = 0, incomeSum = 0;
+      const buyer = document.getElementById('buyerName').value;
+      const date = document.getElementById('orderDate').value;
+      const down = parseFloat(document.getElementById('downpayment').value);
+      const received = parseFloat(document.getElementById('amountReceived').value);
+      const expenses = parseFloat(document.getElementById('expenses').value);
+      const notes = document.getElementById('notes').value;
+      const status = document.getElementById('status').value;
+
+      let itemSummary = '';
+      let total = 0;
+      items.forEach(item => {
+        itemSummary += `• ${item.name} - ${item.qty} pcs @ ₱${item.price}<br>`;
+        total += item.qty * item.price;
+      });
+
+      const balance = total - received;
+      const income = total - expenses;
+
+      const table = document.getElementById('ordersTable');
+      const row = table.insertRow();
+      const data = [buyer, date, itemSummary, total.toFixed(2), down.toFixed(2), received.toFixed(2), expenses.toFixed(2), balance.toFixed(2), income.toFixed(2), status, notes];
+
+      for (let i = 0; i < data.length; i++) {
+        const cell = row.insertCell();
+        if (i === 2) { cell.innerHTML = data[i]; } else { cell.textContent = data[i]; }
+      }
+
+      const actionCell = row.insertCell();
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '✏️ Edit';
+      editBtn.className = 'edit-btn';
+      editBtn.onclick = function () { makeRowEditable(row); };
+      actionCell.appendChild(editBtn);
+
+      document.querySelectorAll('input').forEach(input => input.value = '');
+      document.getElementById('status').value = 'Pending';
+
+      // Update summary values
+      const rows = document.querySelectorAll('#ordersTable tr');
+      rows.forEach(row => {
+        totalSum += parseFloat(row.cells[3].textContent);
+        expensesSum += parseFloat(row.cells[6].textContent);
+        incomeSum += parseFloat(row.cells[8].textContent);
+      });
+      document.getElementById('summary').textContent = `Total: ₱${totalSum.toFixed(2)} | Expenses: ₱${expensesSum.toFixed(2)} | Income: ₱${incomeSum.toFixed(2)}`;
+      document.getElementById('itemList').innerHTML = '';
+      items.length = 0;
+    }
+
+    function makeRowEditable(row) {
+      for (let i = 0; i < row.cells.length - 1; i++) {
+        const cell = row.cells[i];
+        const currentText = cell.innerHTML;
+        const input = document.createElement('input');
+        input.value = cell.textContent;
+        input.style.width = '100%';
+        cell.innerHTML = '';
+        cell.appendChild(input);
+      }
+      const actionCell = row.cells[row.cells.length - 1];
+      actionCell.innerHTML = '';
+      const saveBtn = document.createElement('button');
+      saveBtn.textContent = '💾 Save';
+      saveBtn.className = 'save-btn';
+      saveBtn.onclick = function () { saveRow(row); };
+      actionCell.appendChild(saveBtn);
+    }
+
+    function saveRow(row) {
+      for (let i = 0; i < row.cells.length - 1; i++) {
+        const input = row.cells[i].querySelector('input');
+        if (input) {
+          row.cells[i].textContent = input.value;
+        }
+      }
+      const actionCell = row.cells[row.cells.length - 1];
+      actionCell.innerHTML = '';
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '✏️ Edit';
+      editBtn.className = 'edit-btn';
+      editBtn.onclick = function () { makeRowEditable(row); };
+      actionCell.appendChild(editBtn);
+    }
+  function addFacebookExpense() {
+  const fbExpense = parseFloat(document.getElementById('fbAds').value);
+  if (!fbExpense || fbExpense <= 0) return;
+
+  const table = document.getElementById('ordersTable');
+  const row = table.insertRow();
+  const data = ["-- Facebook Ads --", new Date().toISOString().split('T')[0], "Facebook Promotion", "0.00", "0.00", "0.00", fbExpense.toFixed(2), "0.00", `-${fbExpense.toFixed(2)}`, "Completed", "Auto-tracked"];
+
+  for (let i = 0; i < data.length; i++) {
+    const cell = row.insertCell();
+    cell.textContent = data[i];
+  }
+
+  const actionCell = row.insertCell();
+  actionCell.innerHTML = '<i>n/a</i>';
+
+  // Update summary values
+  let totalSum = 0, expensesSum = 0, incomeSum = 0;
+  const rows = document.querySelectorAll('#ordersTable tr');
+  rows.forEach(row => {
+    totalSum += parseFloat(row.cells[3].textContent);
+    expensesSum += parseFloat(row.cells[6].textContent);
+    incomeSum += parseFloat(row.cells[8].textContent);
+  });
+  document.getElementById('summary').textContent = `Total: ₱${totalSum.toFixed(2)} | Expenses: ₱${expensesSum.toFixed(2)} | Income: ₱${incomeSum.toFixed(2)}`;
+
+  document.getElementById('fbAds').value = '';
+}
+</script>
+</body>
+</html>
