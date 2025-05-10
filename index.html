@@ -78,7 +78,7 @@
     }
   </style>
 </head>
-<body onload="loadOrd
+<body onload="loadOrdersFromSheet()">
   <div class="container">
     <h1>🧾 Sales Tracker - J&S PrinTEEng Press</h1>
 
@@ -232,7 +232,7 @@
       const payload = {
         buyer,
         date,
-        items: itemSummary.replace(/<br>/g, '\\n'),
+        items: itemSummary.replace(/<br>/g, '\n'),
         total: total.toFixed(2),
         down: down.toFixed(2),
         received: received.toFixed(2),
@@ -283,13 +283,14 @@
       editBtn.onclick = function () { makeRowEditable(row); };
       actionCell.appendChild(editBtn);
     }
-  function addFacebookExpense() {
+  async function addFacebookExpense() {
   const fbExpense = parseFloat(document.getElementById('fbAds').value);
   if (!fbExpense || fbExpense <= 0) return;
 
   const table = document.getElementById('ordersTable');
   const row = table.insertRow();
-  const data = ["-- Facebook Ads --", new Date().toISOString().split('T')[0], "Facebook Promotion", "0.00", "0.00", "0.00", fbExpense.toFixed(2), "0.00", `-${fbExpense.toFixed(2)}`, "Completed", "Auto-tracked"];
+  const date = new Date().toISOString().split('T')[0];
+  const data = ["-- Facebook Ads --", date, "Facebook Promotion", "0.00", "0.00", "0.00", fbExpense.toFixed(2), "0.00", `-${fbExpense.toFixed(2)}`, "Completed", "Auto-tracked"];
 
   for (let i = 0; i < data.length; i++) {
     const cell = row.insertCell();
@@ -309,7 +310,52 @@
   });
   document.getElementById('summary').textContent = `Total: ₱${totalSum.toFixed(2)} | Expenses: ₱${expensesSum.toFixed(2)} | Income: ₱${incomeSum.toFixed(2)}`;
 
+  // Save Facebook ad entry to Google Sheet
+  const payload = {
+    buyer: '-- Facebook Ads --',
+    date,
+    items: 'Facebook Promotion',
+    total: '0.00',
+    down: '0.00',
+    received: '0.00',
+    expenses: fbExpense.toFixed(2),
+    balance: '0.00',
+    income: `-${fbExpense.toFixed(2)}`,
+    status: 'Completed',
+    notes: 'Auto-tracked'
+  };
+  await fetch(apiURL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
   document.getElementById('fbAds').value = '';
+}
+async function loadOrdersFromSheet() {
+  const res = await fetch(apiURL);
+  const rows = await res.json();
+  let totalSum = 0, expensesSum = 0, incomeSum = 0;
+  rows.slice(1).forEach(data => {
+    const row = document.getElementById('ordersTable').insertRow();
+    data.slice(0, 11).forEach((val, i) => {
+      const cell = row.insertCell();
+      if (i === 2) cell.innerHTML = val.replace(/
+/g, '<br>');
+      else cell.textContent = val;
+    });
+    const actionCell = row.insertCell();
+    const editBtn = document.createElement('button');
+    editBtn.textContent = '✏️ Edit';
+    editBtn.className = 'edit-btn';
+    editBtn.onclick = function () { makeRowEditable(row); };
+    actionCell.appendChild(editBtn);
+
+    totalSum += parseFloat(data[3]);
+    expensesSum += parseFloat(data[6]);
+    incomeSum += parseFloat(data[8]);
+  });
+  document.getElementById('summary').textContent = `Total: ₱${totalSum.toFixed(2)} | Expenses: ₱${expensesSum.toFixed(2)} | Income: ₱${incomeSum.toFixed(2)}`;
 }
 </script>
 </body>
