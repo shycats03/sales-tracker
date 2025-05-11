@@ -157,7 +157,7 @@
   </div>
 
   <script>
-    const apiURL = "https://script.google.com/macros/s/AKfycbz29ZjIyJlEIFPqHR0ijRoAz4Gjndej67_7TEaZ-s8Ym_QDpBBMz42SJaapIOQTiNzf/exec";
+    const apiURL = "https://script.google.com/macros/s/AKfycbyXkKwDyIYbQAc3EdGYBjv68Sk0K4QOcvNnoGACzUM/dev";
     const items = [];
 
     function addItemToList() {
@@ -340,8 +340,8 @@ async function loadOrdersFromSheet() {
     const row = document.getElementById('ordersTable').insertRow();
     data.slice(0, 11).forEach((val, i) => {
       const cell = row.insertCell();
-      if (i === 2) cell.innerHTML = val.replace(/\\n/g, '<br>');
-
+      if (i === 2) cell.innerHTML = val.replace(/
+/g, '<br>');
       else cell.textContent = val;
     });
     const actionCell = row.insertCell();
