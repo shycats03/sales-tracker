@@ -340,8 +340,7 @@ async function loadOrdersFromSheet() {
     const row = document.getElementById('ordersTable').insertRow();
     data.slice(0, 11).forEach((val, i) => {
       const cell = row.insertCell();
-      if (i === 2) cell.innerHTML = val.replace(/
-/g, '<br>');
+      if (i === 2) cell.innerHTML = val.replace(/\\n/g, '<br>');
       else cell.textContent = val;
     });
     const actionCell = row.insertCell();
