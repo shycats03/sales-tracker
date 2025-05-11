@@ -141,6 +141,7 @@
       </div>
     </div>
     <button onclick="addOrder()">✅ Add Order</button>
+    <button onclick="saveToSheet()" style="margin-left: 10px;">💾 Save to Sheet</button>
 
     <table>
       <thead>
@@ -340,7 +341,8 @@ async function loadOrdersFromSheet() {
     const row = document.getElementById('ordersTable').insertRow();
     data.slice(0, 11).forEach((val, i) => {
       const cell = row.insertCell();
-      if (i === 2) cell.innerHTML = val.replace(/\\n/g, '<br>');
+      if (i === 2) cell.innerHTML = val.replace(/
+/g, '<br>');
       else cell.textContent = val;
     });
     const actionCell = row.insertCell();
@@ -355,6 +357,34 @@ async function loadOrdersFromSheet() {
     incomeSum += parseFloat(data[8]);
   });
   document.getElementById('summary').textContent = `Total: ₱${totalSum.toFixed(2)} | Expenses: ₱${expensesSum.toFixed(2)} | Income: ₱${incomeSum.toFixed(2)}`;
+}
+function saveToSheet() {
+  const rows = document.querySelectorAll('#ordersTable tr');
+  rows.forEach(async (row, index) => {
+    if (index === 0) return; // skip header row
+    const cells = row.querySelectorAll('td');
+    if (cells.length < 11) return;
+    const payload = {
+      buyer: cells[0].textContent,
+      date: cells[1].textContent,
+      items: cells[2].innerHTML.replace(/<br>/g, '
+'),
+      total: cells[3].textContent,
+      down: cells[4].textContent,
+      received: cells[5].textContent,
+      expenses: cells[6].textContent,
+      balance: cells[7].textContent,
+      income: cells[8].textContent,
+      status: cells[9].textContent,
+      notes: cells[10].textContent
+    };
+    await fetch(apiURL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  });
+  alert("All current rows have been sent to Google Sheet!");
 }
 </script>
 </body>
